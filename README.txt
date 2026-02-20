@@ -121,6 +121,4 @@ Build and install:
   make
   make install
 
-For additional information about Huawei dongle usage
-look to chan_dongle Wiki at http://wiki.e1550.mobi
-and chan_dongle project home at https://github.com/bg111/asterisk-chan-dongle/
+Original chan_dongle project: https://github.com/bg111/asterisk-chan-dongle/
