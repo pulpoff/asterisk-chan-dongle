@@ -6,7 +6,6 @@
 
 # Autotools generated (build-time)
 Makefile
-compile
 config.h
 config.h.in~
 config.log
