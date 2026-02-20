@@ -645,8 +645,8 @@ static void * do_discovery(void * arg)
 				{
 					case DEV_STATE_RESTARTED:
 						pvt_stop(pvt);
-						/* passthru */
 						pvt->desired_state = DEV_STATE_STARTED;
+						/* fall through */
 					case DEV_STATE_STARTED:
 						pvt_start(pvt);
 						break;
@@ -1629,7 +1629,10 @@ static int load_module(void)
 	gpublic = ast_calloc(1, sizeof(*gpublic));
 	if(gpublic)
 	{
-		channel_tech_caps_initialize();
+		if (channel_tech_caps_initialize()) {
+			ast_free(gpublic);
+			return AST_MODULE_LOAD_FAILURE;
+		}
 		channel_tech.capabilities = channel_tech_caps_get();
 		pdiscovery_init();
 		rv = public_state_init(gpublic);

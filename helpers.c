@@ -82,6 +82,21 @@ EXPORT_DEF int get_at_clir_value (struct pvt* pvt, int clir)
 
 typedef int (*at_cmd_f)(struct cpvt*, const char*, const char*, unsigned, int, void **);
 
+static int at_enque_reset_compat(struct cpvt* cpvt, attribute_unused const char* u1, attribute_unused const char* u2, attribute_unused unsigned u3, attribute_unused int u4, attribute_unused void** u5)
+{
+	return at_enque_reset(cpvt);
+}
+
+static int at_enque_set_ccwa_compat(struct cpvt* cpvt, attribute_unused const char* u1, attribute_unused const char* u2, unsigned call_waiting, attribute_unused int u4, attribute_unused void** u5)
+{
+	return at_enque_set_ccwa(cpvt, u1, u2, call_waiting);
+}
+
+static int at_enque_user_cmd_compat(struct cpvt* cpvt, const char* input, attribute_unused const char* u2, attribute_unused unsigned u3, attribute_unused int u4, attribute_unused void** u5)
+{
+	return at_enque_user_cmd(cpvt, input);
+}
+
 #/* */
 static const char* send2(const char* dev_name, int * status, int online, const char* emsg, const char* okmsg, at_cmd_f func, const char* arg1, const char * arg2, unsigned arg3, int arg4, void ** arg5)
 {
@@ -158,19 +173,19 @@ EXPORT_DEF const char * send_pdu(const char * dev_name, const char * pdu, int * 
 #/* */
 EXPORT_DEF const char* send_reset(const char* dev_name, int * status)
 {
-	return send2(dev_name, status, 0, "Error adding reset command to queue", "Reset command queued for execute", (at_cmd_f)at_enque_reset, 0, 0, 0, 0, NULL);
+	return send2(dev_name, status, 0, "Error adding reset command to queue", "Reset command queued for execute", at_enque_reset_compat, 0, 0, 0, 0, NULL);
 }
 
 #/* */
 EXPORT_DEF const char* send_ccwa_set(const char* dev_name, call_waiting_t enable, int * status)
 {
-	return send2(dev_name, status, 1, "Error adding CCWA commands to queue", "Call-Waiting commands queued for execute", (at_cmd_f)at_enque_set_ccwa, 0, 0, enable, 0, NULL);
+	return send2(dev_name, status, 1, "Error adding CCWA commands to queue", "Call-Waiting commands queued for execute", at_enque_set_ccwa_compat, 0, 0, enable, 0, NULL);
 }
 
 #/* */
 EXPORT_DEF const char* send_at_command(const char* dev_name, const char* command)
 {
-	return send2(dev_name, NULL, 0, "Error adding command", "Command queued for execute", (at_cmd_f)at_enque_user_cmd, command, NULL, 0, 0, NULL);
+	return send2(dev_name, NULL, 0, "Error adding command", "Command queued for execute", at_enque_user_cmd_compat, command, NULL, 0, 0, NULL);
 }
 
 EXPORT_DEF const char* schedule_restart_event(dev_state_t event, restate_time_t when, const char* dev_name, int * status)
