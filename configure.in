@@ -243,4 +243,11 @@ AC_SUBST([PACKAGE_VERSION])
 AC_SUBST([DESTDIR])
 AC_SUBST([AC_CFLAGS])
 AC_CONFIG_FILES([Makefile])
+
+dnl Strip PACKAGE_* defines from config.h to avoid redefinition warnings
+dnl with Asterisk's autoconfig.h. Our code uses MODULE_* names instead.
+AC_CONFIG_COMMANDS([fix-config-h], [
+  sed '/^#define PACKAGE_BUGREPORT /d;/^#define PACKAGE_NAME /d;/^#define PACKAGE_STRING /d;/^#define PACKAGE_TARNAME /d;/^#define PACKAGE_URL /d;/^#define PACKAGE_VERSION /d' config.h > config.h.tmp && mv config.h.tmp config.h
+])
+
 AC_OUTPUT
