@@ -18,7 +18,6 @@
 #include <asterisk/app.h>	/* AST_DECLARE_APP_ARGS() ... */
 #include <asterisk/pbx.h>	/* pbx_builtin_setvar_helper() */
 #include <asterisk/module.h>	/* ast_register_application2() ast_unregister_application() */
-#include <asterisk/version.h>	/* ASTERISK_VERSION_NUM */
 
 #include "app.h"		/* app_register() app_unregister() */
 #include "chan_dongle.h"	/* struct pvt */
@@ -147,11 +146,7 @@ static const struct dongle_application
 	}
 };
 
-#if ASTERISK_VERSION_NUM >= 10800
 typedef int		(*app_func_t)(struct ast_channel* channel, const char * data);
-#else
-typedef int		(*app_func_t)(struct ast_channel* channel, void * data);
-#endif
 
 #/* */
 EXPORT_DEF void app_register()
