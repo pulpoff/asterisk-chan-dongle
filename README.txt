@@ -18,15 +18,6 @@ updates the module to compile and run against Asterisk 20, including:
 
 Tested with Asterisk 20.6.0 and Huawei E1762.
 
-WARNING:
-
-This channel driver is in alpha stage.
-I am not responsible if this channel driver will eat your money on
-your SIM card or do any unpredicted things.
-
-Please use a recent Linux kernel, 2.6.33+ recommended.
-If you use FreeBSD, 8.0+ recommended.
-
 This channel driver should work with the folowing UMTS cards:
 * Huawei K3715
 * Huawei E169 / K3520
