@@ -18,24 +18,12 @@ updates the module to compile and run against Asterisk 20, including:
 
 Tested with Asterisk 20.6.0 and Huawei E1762.
 
-WARNING:
-
-This channel driver is in alpha stage.
-I am not responsible if this channel driver will eat your money on
-your SIM card or do any unpredicted things.
-
-Please use a recent Linux kernel, 2.6.33+ recommended.
-If you use FreeBSD, 8.0+ recommended.
-
 This channel driver should work with the folowing UMTS cards:
 * Huawei K3715
 * Huawei E169 / K3520
 * Huawei E155X
 * Huawei E175X
 * Huawei K3765
-
-Check complete list in:
-http://wiki.e1550.mobi/doku.php?id=requirements#list_of_supported_models
 
 Before using the channel driver make sure to:
 
@@ -123,7 +111,21 @@ dongle reload gracefully
 dongle reload now
 dongle reload when convenient
 
-For reading installation notes please look to INSTALL file.
+Building from source:
+
+Prerequisites:
+  apt install autoconf automake asterisk-dev
+
+If building from git (no ./configure script present):
+  autoconf
+  autoheader
+
+Then:
+  ./configure
+  make
+  make install
+
+For more details see the INSTALL file.
 
 For additional information about Huawei dongle usage
 look to chan_dongle Wiki at http://wiki.e1550.mobi
