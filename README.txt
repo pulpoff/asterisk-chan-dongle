@@ -2,6 +2,22 @@
 chan_dongle channel driver for Huawei UMTS cards
 --------------------------------------------------
 
+This fork adds support for Asterisk 20.
+
+The original chan_dongle code was written for Asterisk 1.8 and used
+many APIs that were removed or changed in later versions. This fork
+updates the module to compile and run against Asterisk 20, including:
+
+* Opaque ast_channel structure (accessor functions instead of direct field access)
+* New format capabilities API (ast_format_cap / ast_format_slin)
+* Updated channel_request callback signature
+* Updated ast_channel_alloc with assignedids/requestor parameters
+* ast_bridged_channel replaced by ast_channel_bridge_peer
+* Updated module registration (AST_MODULE_INFO with load_pri/support_level)
+* Removed deprecated ASTERISK_FILE_VERSION macro
+
+Tested with Asterisk 20.6.0 and Huawei E1762.
+
 WARNING:
 
 This channel driver is in alpha stage.
