@@ -96,7 +96,7 @@ EXPORT_DEF int channels_loop(struct pvt * pvt, const struct ast_channel * reques
 	return 0;
 }
 
-static struct ast_channel * channel_request (const char * type, struct ast_format_cap *cap, const struct ast_assigned_ids *assignedids, const struct ast_channel * requestor, const char * data, int * cause)
+static struct ast_channel * channel_request (attribute_unused const char * type, struct ast_format_cap *cap, const struct ast_assigned_ids *assignedids, const struct ast_channel * requestor, const char * data, int * cause)
 {
 	char * dest_dev;
 	const char * dest_num;
@@ -148,7 +148,7 @@ static struct ast_channel * channel_request (const char * type, struct ast_forma
 }
 
 #/* */
-static int channel_call (struct ast_channel* channel, const char* dest, int timeout)
+static int channel_call (struct ast_channel* channel, const char* dest, attribute_unused int timeout)
 {
 	struct cpvt* cpvt = ast_channel_tech_pvt(channel);
 	struct pvt* pvt;

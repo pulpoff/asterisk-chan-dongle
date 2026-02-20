@@ -80,6 +80,6 @@ typedef struct at_responses_t
 /*! responses description */
 EXPORT_DECL const at_responses_t at_responses;
 EXPORT_DECL const char* at_res2str (at_res_t res);
-EXPORT_DECL int at_response (struct pvt* pvt, const struct iovec * iov, int iovcnt, at_res_t at_res);
+EXPORT_DECL int at_response (struct pvt* pvt, const struct iovec iov[2], int iovcnt, at_res_t at_res);
 
 #endif /* CHAN_DONGLE_AT_RESPONSE_H_INCLUDED */
