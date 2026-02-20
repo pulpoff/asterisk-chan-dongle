@@ -161,6 +161,7 @@ AC_SUBST([TARGET])
 AC_CC_OPT([-fPIC],[-fPIC])
 AC_CC_OPT([-Wall],[-Wall])
 AC_CC_OPT([-Wextra],[-Wextra])
+AC_CC_OPT([-Wno-old-style-declaration],[-Wno-old-style-declaration])
 AC_CC_OPT([-MD -MT conftest.o -MF /dev/null -MP],[-MD -MT \$@ -MF .\$(subst /,_,\$@).d -MP])
 
 AC_DEFUN([AC_CHECK_DESTDIR], [

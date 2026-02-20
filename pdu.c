@@ -312,7 +312,7 @@ EXPORT_DEF char pdu_digit2code(char digit)
 }
 
 #/* */
-static char pdu_code2digit(char code)
+static signed char pdu_code2digit(char code)
 {
 	switch(code)
 	{
@@ -452,7 +452,7 @@ static int pdu_parse_number(char ** pdu, size_t * pdu_length, unsigned digits, i
 		unsigned syms = ROUND_UP2(digits);
 		if(syms <= *pdu_length)
 		{
-			char digit;
+			signed char digit;
 			if(*toa == NUMBER_TYPE_INTERNATIONAL)
 				*number++ = '+';
 			for(; syms > 0; syms -= 2, *pdu += 2, *pdu_length -= 2)

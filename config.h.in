@@ -111,6 +111,16 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* Undefine standard PACKAGE_* macros to avoid redefinition warnings
+   when Asterisk headers include their own autoconfig.h.
+   Our code uses MODULE_VERSION/MODULE_BUGREPORT/MODULE_URL instead. */
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_URL
+#undef PACKAGE_VERSION
+
 /* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
