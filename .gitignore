@@ -6,11 +6,13 @@
 
 # Autotools generated (build-time)
 Makefile
+compile
 config.h
 config.h.in~
 config.log
 config.status
 configure~
+missing
 stamp-h1
 autom4te.cache/
 
