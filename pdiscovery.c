@@ -497,7 +497,7 @@ static char * pdiscovery_handle_cimi(const char * devname, char * str)
 					ast_debug(4, "[%s discovery] found IMSI %s\n", devname, imsi);
 					return imsi;
 				}
-				// passthru
+				/* fall through */
 			default:
 				state = STATE_BEGIN;
 		}

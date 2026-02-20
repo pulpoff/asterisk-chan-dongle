@@ -385,7 +385,7 @@ static char* cli_show_version (struct ast_cli_entry* e, int cmd, struct ast_cli_
 		return CLI_SHOWUSAGE;
 	}
 
-	ast_cli (a->fd, "\n%s: %s, Version %s, Revision %s\nProject Home: %s\nBug Reporting: %s\n\n", AST_MODULE, MODULE_DESCRIPTION, MODULE_VERSION, PACKAGE_REVISION, MODULE_URL, MODULE_BUGREPORT);
+	ast_cli (a->fd, "\n%s: %s, Version %s\nProject Home: %s\nBug Reporting: %s\n\n", AST_MODULE, MODULE_DESCRIPTION, MODULE_VERSION, MODULE_URL, MODULE_BUGREPORT);
 
 	return CLI_SUCCESS;
 }

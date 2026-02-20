@@ -28,7 +28,7 @@ EXPORT_DECL int queue_hangup (struct ast_channel * channel, int hangupcause);
 EXPORT_DECL void start_local_channel (struct pvt * pvt, const char * exten, const char * number, channel_var_t * vars);
 EXPORT_DECL void change_channel_state(struct cpvt * cpvt, unsigned newstate, int cause);
 EXPORT_DECL int channels_loop(struct pvt * pvt, const struct ast_channel * requestor);
-EXPORT_DECL void channel_tech_caps_initialize(void);
+EXPORT_DECL int channel_tech_caps_initialize(void);
 EXPORT_DECL void channel_tech_caps_destroy(void);
 EXPORT_DECL struct ast_format_cap *channel_tech_caps_get(void);
 

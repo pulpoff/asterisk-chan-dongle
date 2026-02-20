@@ -1077,11 +1077,17 @@ EXPORT_DEF struct ast_channel* new_channel (struct pvt* pvt, int ast_state, cons
 			ast_channel_tech_set(channel, &channel_tech);
 
 			cap = ast_format_cap_alloc(AST_FORMAT_CAP_FLAG_DEFAULT);
-			if (cap) {
-				ast_format_cap_append(cap, ast_format_slin, 0);
-				ast_channel_nativeformats_set(channel, cap);
-				ao2_ref(cap, -1);
+			if (!cap) {
+				ast_log(LOG_ERROR, "[%s] Unable to allocate format capabilities\n", PVT_ID(pvt));
+				ast_channel_tech_pvt_set(channel, NULL);
+				cpvt_free(cpvt);
+				ast_channel_unlock(channel);
+				ast_hangup(channel);
+				return NULL;
 			}
+			ast_format_cap_append(cap, ast_format_slin, 0);
+			ast_channel_nativeformats_set(channel, cap);
+			ao2_ref(cap, -1);
 			ast_channel_set_writeformat(channel, ast_format_slin);
 			ast_channel_set_rawwriteformat(channel, ast_format_slin);
 			ast_channel_set_readformat(channel, ast_format_slin);
@@ -1299,12 +1305,15 @@ static int channel_func_write(struct ast_channel* channel, const char* function,
 	return ret;
 }
 
-EXPORT_DEF void channel_tech_caps_initialize(void)
+EXPORT_DEF int channel_tech_caps_initialize(void)
 {
 	channel_tech_caps = ast_format_cap_alloc(AST_FORMAT_CAP_FLAG_DEFAULT);
-	if (channel_tech_caps) {
-		ast_format_cap_append(channel_tech_caps, ast_format_slin, 0);
+	if (!channel_tech_caps) {
+		ast_log(LOG_ERROR, "Unable to allocate channel tech format capabilities\n");
+		return -1;
 	}
+	ast_format_cap_append(channel_tech_caps, ast_format_slin, 0);
+	return 0;
 }
 
 EXPORT_DEF void channel_tech_caps_destroy(void)
