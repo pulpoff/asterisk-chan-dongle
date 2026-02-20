@@ -897,6 +897,9 @@ static int channel_indicate (struct ast_channel* channel, int condition, const v
 		case AST_CONTROL_PROCEEDING:
 		case AST_CONTROL_VIDUPDATE:
 		case AST_CONTROL_SRCUPDATE:
+		case AST_CONTROL_PVT_CAUSE_CODE:
+		case AST_CONTROL_CONNECTED_LINE:
+		case AST_CONTROL_MASQUERADE_NOTIFY:
 			break;
 
 		case AST_CONTROL_HOLD:
