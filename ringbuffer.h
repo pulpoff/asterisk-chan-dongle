@@ -50,7 +50,7 @@ EXPORT_DECL int rb_memcmp (const struct ringbuffer*, const char*, size_t);
 EXPORT_DECL int rb_read_all_iov (const struct ringbuffer* rb, struct iovec iov[2]);
 
 /*!< fill io vectors array and return number of io vectors updated for reading len bytes */
-EXPORT_DECL int rb_read_n_iov (const struct ringbuffer* rb, struct iovec* iov, size_t len);
+EXPORT_DECL int rb_read_n_iov (const struct ringbuffer* rb, struct iovec iov[2], size_t len);
 
 EXPORT_DECL int rb_read_until_char_iov (const struct ringbuffer*, struct iovec iov[2], char);
 EXPORT_DECL int rb_read_until_mem_iov (const struct ringbuffer*, struct iovec iov[2], const void*, size_t);

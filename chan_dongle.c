@@ -106,8 +106,8 @@ static int lock_build(const char * devname, char * buf, unsigned length)
 	else
 		basename = devname;
 
-	/* NOTE: use system system wide lock directory */
-	return snprintf(buf, length, "/var/lock/LCK..%s", basename);
+	/* NOTE: use system wide lock directory */
+	return snprintf(buf, length, "/var/lock/LCK..%.200s", basename);
 }
 
 #/* return 0 on error */

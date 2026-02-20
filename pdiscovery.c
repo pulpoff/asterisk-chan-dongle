@@ -402,7 +402,7 @@ static int pdiscovery_interfaces(const char * devname, const char * name, int le
 
 
 #/* */
-static const const struct pdiscovery_device * pdiscovery_lookup_ids(const char * devname, const char * name, int len)
+static const struct pdiscovery_device * pdiscovery_lookup_ids(const char * devname, const char * name, int len)
 {
 	unsigned vid;
 	unsigned pid;
