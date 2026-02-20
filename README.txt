@@ -114,18 +114,12 @@ dongle reload when convenient
 Building from source:
 
 Prerequisites:
-  apt install autoconf automake asterisk-dev
+  apt install asterisk-dev
 
-If building from git (no ./configure script present):
-  autoconf
-  autoheader
-
-Then:
+Build and install:
   ./configure
   make
   make install
-
-For more details see the INSTALL file.
 
 For additional information about Huawei dongle usage
 look to chan_dongle Wiki at http://wiki.e1550.mobi

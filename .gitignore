@@ -4,19 +4,14 @@
 *.d
 *.core
 
-# Autotools generated
+# Autotools generated (build-time)
 Makefile
-aclocal.m4
 compile
-config.guess
 config.h
 config.h.in~
 config.log
 config.status
-config.sub
-configure
 configure~
-install-sh
 missing
 stamp-h1
 autom4te.cache/
