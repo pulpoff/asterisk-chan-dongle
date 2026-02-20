@@ -37,7 +37,6 @@
 
 
 #include <asterisk.h>
-ASTERISK_FILE_VERSION(__FILE__, "$Rev: " PACKAGE_REVISION " $")
 
 #include <asterisk/stringfields.h>	/* AST_DECLARE_STRING_FIELDS for asterisk/manager.h */
 #include <asterisk/manager.h>
@@ -1623,17 +1622,21 @@ static void devices_destroy(public_state_t * state)
 }
 
 
-static int load_module()
+static int load_module(void)
 {
 	int rv;
 
 	gpublic = ast_calloc(1, sizeof(*gpublic));
 	if(gpublic)
 	{
+		channel_tech_caps_initialize();
+		channel_tech.capabilities = channel_tech_caps_get();
 		pdiscovery_init();
 		rv = public_state_init(gpublic);
-		if(rv != AST_MODULE_LOAD_SUCCESS)
+		if(rv != AST_MODULE_LOAD_SUCCESS) {
+			channel_tech_caps_destroy();
 			ast_free(gpublic);
+		}
 	}
 	else
 	{
@@ -1715,12 +1718,13 @@ static void public_state_fini(struct public_state * state)
 	AST_RWLIST_HEAD_DESTROY(&state->devices);
 }
 
-static int unload_module()
+static int unload_module(void)
 {
 
 	public_state_fini(gpublic);
 	pdiscovery_fini();
-	
+	channel_tech_caps_destroy();
+
 	ast_free(gpublic);
 	gpublic = NULL;
 	return 0;
@@ -1737,7 +1741,7 @@ EXPORT_DEF void pvt_reload(restate_time_t when)
 }
 
 #/* */
-static int reload_module()
+static int reload_module(void)
 {
 	pvt_reload(RESTATE_TIME_GRACEFULLY);
 	return 0;
@@ -1747,9 +1751,9 @@ AST_MODULE_INFO(ASTERISK_GPL_KEY, AST_MODFLAG_DEFAULT, MODULE_DESCRIPTION,
 		.load = load_module,
 		.unload = unload_module,
 		.reload = reload_module,
+		.load_pri = AST_MODPRI_CHANNEL_DRIVER,
+		.support_level = AST_MODULE_SUPPORT_EXTENDED,
 	       );
-
-//AST_MODULE_INFO_STANDARD (ASTERISK_GPL_KEY, MODULE_DESCRIPTION);
 
 EXPORT_DEF struct ast_module* self_module()
 {
