@@ -306,7 +306,7 @@ static int channel_hangup (struct ast_channel* channel)
 
 		ast_mutex_lock (&pvt->lock);
 
-		ast_debug (1, "[%s] Hanging up call idx %d need hangup %d\n", PVT_ID(pvt), cpvt->call_idx, CPVT_TEST_FLAG(cpvt, CALL_FLAG_NEED_HANGUP) ? 1 : 0);
+		ast_debug (1, "[%s] Hanging up call idx %d need hangup %d state %s\n", PVT_ID(pvt), cpvt->call_idx, CPVT_TEST_FLAG(cpvt, CALL_FLAG_NEED_HANGUP) ? 1 : 0, call_state2str(cpvt->state));
 
 		if (CPVT_TEST_FLAG(cpvt, CALL_FLAG_NEED_HANGUP))
 		{
@@ -319,8 +319,9 @@ static int channel_hangup (struct ast_channel* channel)
 
 		disactivate_call (cpvt);
 
-		/* drop cpvt->channel reference */
+		/* drop cpvt->channel reference and free cpvt */
 		cpvt->channel = NULL;
+		cpvt_free(cpvt);
 		ast_mutex_unlock (&pvt->lock);
 	}
 
@@ -542,6 +543,13 @@ static struct ast_frame* channel_read (struct ast_channel* channel)
 		CHANNEL_DEADLOCK_AVOIDANCE (channel);
 	}
 
+	/* Re-check: cpvt may have been freed by channel_hangup during CHANNEL_DEADLOCK_AVOIDANCE */
+	if(ast_channel_tech_pvt(channel) != cpvt)
+	{
+		ast_mutex_unlock (&pvt->lock);
+		return f;
+	}
+
 	ast_debug (7, "[%s] read call idx %d state %d audio_fd %d\n", PVT_ID(pvt), cpvt->call_idx, cpvt->state, pvt->audio_fd);
 
 	/* FIXME: move down for enable timing_write() to device ? */
@@ -692,6 +700,13 @@ static int channel_write (struct ast_channel* channel, struct ast_frame* f)
 	while (ast_mutex_trylock (&pvt->lock))
 	{
 		CHANNEL_DEADLOCK_AVOIDANCE (channel);
+	}
+
+	/* Re-check: cpvt may have been freed by channel_hangup during CHANNEL_DEADLOCK_AVOIDANCE */
+	if(ast_channel_tech_pvt(channel) != cpvt)
+	{
+		ast_mutex_unlock (&pvt->lock);
+		return 0;
 	}
 
 	if(!CPVT_IS_ACTIVE(cpvt))
@@ -1021,10 +1036,11 @@ EXPORT_DEF void change_channel_state(struct cpvt * cpvt, unsigned newstate, int 
 					disactivate_call(cpvt);
 					/* from +CEND, restart or disconnect */
 
-
-					/* drop channel -> cpvt reference */
-					ast_channel_tech_pvt_set(channel, NULL);
-					cpvt_free(cpvt);
+					/* Do NOT free cpvt here - other threads (channel_read/channel_write)
+					 * may have already cached a pointer to it from ast_channel_tech_pvt().
+					 * Freeing here causes use-after-free -> segfault when device is lost.
+					 * Let channel_hangup() do the cleanup after Asterisk is done with the channel.
+					 * cpvt->state is already RELEASED so all callbacks bail out early. */
 					if (queue_hangup (channel, cause))
 					{
 						ast_log (LOG_ERROR, "[%s] Error queueing hangup...\n", PVT_ID(pvt));
