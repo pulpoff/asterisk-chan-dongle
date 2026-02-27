@@ -7,8 +7,15 @@ type=transport
 protocol=udp
 bind=0.0.0.0:5060
 
+; ── Auth ────────────────────────────────────────────────────────────────────
+[pjsip-trunk-auth]
+type=auth
+auth_type=userpass
+username=${TRUNK_USER}
+password=${TRUNK_PASS}
+
 ; ── Registration to remote PBX ──────────────────────────────────────────────
-[pjsip-trunk]
+[pjsip-trunk-reg]
 type=registration
 transport=transport-udp
 outbound_auth=pjsip-trunk-auth
@@ -16,11 +23,11 @@ server_uri=sip:${TRUNK_HOST}:${TRUNK_PORT}
 client_uri=sip:${TRUNK_USER}@${TRUNK_HOST}:${TRUNK_PORT}
 retry_interval=60
 
-[pjsip-trunk-auth]
-type=auth
-auth_type=userpass
-username=${TRUNK_USER}
-password=${TRUNK_PASS}
+; ── AOR (Address of Record) ─────────────────────────────────────────────────
+[pjsip-trunk-aor]
+type=aor
+contact=sip:${TRUNK_HOST}:${TRUNK_PORT}
+qualify_frequency=60
 
 ; ── Endpoint ────────────────────────────────────────────────────────────────
 [pjsip-trunk]
@@ -32,7 +39,7 @@ allow=ulaw
 allow=alaw
 allow=gsm
 outbound_auth=pjsip-trunk-auth
-aors=pjsip-trunk
+aors=pjsip-trunk-aor
 from_user=${TRUNK_USER}
 direct_media=no
 rtp_symmetric=yes
@@ -40,12 +47,8 @@ force_rport=yes
 rewrite_contact=yes
 media_encryption=sdes
 
-[pjsip-trunk]
-type=aor
-contact=sip:${TRUNK_HOST}:${TRUNK_PORT}
-qualify_frequency=60
-
-[pjsip-trunk]
+; ── Identify (match inbound by IP) ──────────────────────────────────────────
+[pjsip-trunk-identify]
 type=identify
 endpoint=pjsip-trunk
 match=${TRUNK_HOST}

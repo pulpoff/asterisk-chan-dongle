@@ -60,22 +60,26 @@ echo "   Context  : $DONGLE_CONTEXT"
 
 export TRUNK_USER TRUNK_PASS TRUNK_HOST TRUNK_PORT TRUNK_PROTO TRUNK_DIAL DONGLE_CONTEXT
 
+# Only substitute our own env vars — Asterisk dialplan uses ${EXTEN}, ${CALLERID(...)}, etc.
+# that must NOT be touched by envsubst.
+ENVSUBST_VARS='$TRUNK_USER $TRUNK_PASS $TRUNK_HOST $TRUNK_PORT $TRUNK_PROTO $TRUNK_DIAL $DONGLE_CONTEXT'
+
 # Always generate dongle.conf and extensions.conf
-envsubst < /etc/asterisk/templates/dongle.conf.template     > /etc/asterisk/dongle.conf
-envsubst < /etc/asterisk/templates/extensions.conf.template  > /etc/asterisk/extensions.conf
+envsubst "$ENVSUBST_VARS" < /etc/asterisk/templates/dongle.conf.template     > /etc/asterisk/dongle.conf
+envsubst "$ENVSUBST_VARS" < /etc/asterisk/templates/extensions.conf.template  > /etc/asterisk/extensions.conf
 
 # Generate the protocol-specific trunk config
 case "$TRUNK_PROTO" in
     iax)
-        envsubst < /etc/asterisk/templates/iax.conf.template > /etc/asterisk/iax.conf
+        envsubst "$ENVSUBST_VARS" < /etc/asterisk/templates/iax.conf.template > /etc/asterisk/iax.conf
         echo "   Config   : iax.conf generated"
         ;;
     sip)
-        envsubst < /etc/asterisk/templates/sip.conf.template > /etc/asterisk/sip.conf
+        envsubst "$ENVSUBST_VARS" < /etc/asterisk/templates/sip.conf.template > /etc/asterisk/sip.conf
         echo "   Config   : sip.conf generated (chan_sip)"
         ;;
     pjsip)
-        envsubst < /etc/asterisk/templates/pjsip.conf.template > /etc/asterisk/pjsip.conf
+        envsubst "$ENVSUBST_VARS" < /etc/asterisk/templates/pjsip.conf.template > /etc/asterisk/pjsip.conf
         echo "   Config   : pjsip.conf generated (chan_pjsip)"
         ;;
 esac

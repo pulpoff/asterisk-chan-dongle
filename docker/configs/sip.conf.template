@@ -16,9 +16,6 @@ qualify=yes
 nat=force_rport,comedia
 directmedia=no
 
-; SRTP support
-encryption=yes
-
 ; ── Registration to remote PBX ──────────────────────────────────────────────
 register => ${TRUNK_USER}:${TRUNK_PASS}@${TRUNK_HOST}:${TRUNK_PORT}/${TRUNK_USER}
 
@@ -39,4 +36,3 @@ disallow=all
 allow=ulaw
 allow=alaw
 allow=gsm
-encryption=yes

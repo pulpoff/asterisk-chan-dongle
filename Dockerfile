@@ -19,8 +19,6 @@ ARG ASTERISK_VER=20-current
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
-        autoconf \
-        automake \
         libtool \
         pkg-config \
         ca-certificates \
@@ -46,8 +44,6 @@ RUN wget -q "https://downloads.asterisk.org/pub/telephony/asterisk/asterisk-${AS
     && mv asterisk-20.* asterisk
 
 WORKDIR /src/asterisk
-RUN contrib/scripts/install_prereq install \
-    || true
 RUN ./configure --with-jansson-bundled \
     && make menuselect.makeopts \
     && menuselect/menuselect \
@@ -77,9 +73,7 @@ RUN ./configure --with-jansson-bundled \
 COPY . /src/chan_dongle
 WORKDIR /src/chan_dongle
 
-RUN autoconf \
-    && ./configure --with-asterisk=/usr/include \
-    && make clean \
+RUN ./configure --with-asterisk=/usr/include \
     && make
 
 # ── Stage 2: Slim runtime image ────────────────────────────────────────────
@@ -105,10 +99,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gettext-base \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Asterisk installation from builder
+# Copy Asterisk installation from builder (binaries, modules, bundled libs, data, configs)
 COPY --from=builder /usr/sbin/asterisk          /usr/sbin/asterisk
 COPY --from=builder /usr/sbin/rasterisk         /usr/sbin/rasterisk
 COPY --from=builder /usr/lib/asterisk/          /usr/lib/asterisk/
+COPY --from=builder /usr/lib/libasterisk*       /usr/lib/
 COPY --from=builder /var/lib/asterisk/          /var/lib/asterisk/
 COPY --from=builder /var/spool/asterisk/        /var/spool/asterisk/
 COPY --from=builder /etc/asterisk/              /etc/asterisk/
