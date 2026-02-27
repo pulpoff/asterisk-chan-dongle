@@ -46,7 +46,56 @@ RUN wget -q "https://downloads.asterisk.org/pub/telephony/asterisk/asterisk-${AS
     && mv asterisk-20.* asterisk
 
 WORKDIR /src/asterisk
-RUN ./configure --with-jansson-bundled \
+
+# QEMU emulation (used by docker buildx for arm64/armv7) can cause autoconf
+# header checks to fail non-deterministically. Pre-seed all standard headers
+# that are guaranteed present from our build dependencies.
+RUN cat > /tmp/config.site << 'SITE'
+ac_cv_header_assert_h=yes
+ac_cv_header_ctype_h=yes
+ac_cv_header_dlfcn_h=yes
+ac_cv_header_errno_h=yes
+ac_cv_header_fcntl_h=yes
+ac_cv_header_float_h=yes
+ac_cv_header_grp_h=yes
+ac_cv_header_inttypes_h=yes
+ac_cv_header_limits_h=yes
+ac_cv_header_locale_h=yes
+ac_cv_header_math_h=yes
+ac_cv_header_pwd_h=yes
+ac_cv_header_regex_h=yes
+ac_cv_header_sched_h=yes
+ac_cv_header_stdarg_h=yes
+ac_cv_header_stdint_h=yes
+ac_cv_header_stdio_h=yes
+ac_cv_header_stdlib_h=yes
+ac_cv_header_string_h=yes
+ac_cv_header_strings_h=yes
+ac_cv_header_syslog_h=yes
+ac_cv_header_termios_h=yes
+ac_cv_header_time_h=yes
+ac_cv_header_dirent_h=yes
+ac_cv_header_sys_file_h=yes
+ac_cv_header_sys_ioctl_h=yes
+ac_cv_header_sys_param_h=yes
+ac_cv_header_sys_resource_h=yes
+ac_cv_header_sys_socket_h=yes
+ac_cv_header_sys_stat_h=yes
+ac_cv_header_sys_time_h=yes
+ac_cv_header_sys_types_h=yes
+ac_cv_header_sys_un_h=yes
+ac_cv_header_sys_wait_h=yes
+ac_cv_header_netinet_in_h=yes
+ac_cv_header_netdb_h=yes
+ac_cv_header_arpa_nameser_h=yes
+ac_cv_header_resolv_h=yes
+ac_cv_header_sqlite3_h=yes
+ac_cv_header_openssl_ssl_h=yes
+ac_cv_header_openssl_crypto_h=yes
+ac_cv_header_uuid_uuid_h=yes
+SITE
+
+RUN CONFIG_SITE=/tmp/config.site ./configure --with-jansson-bundled \
     && make menuselect.makeopts \
     && menuselect/menuselect \
         --enable chan_iax2 \
