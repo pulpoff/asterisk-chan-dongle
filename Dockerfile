@@ -2,8 +2,8 @@
 # Multi-arch Dockerfile: Asterisk 20 LTS (from source) + chan_dongle
 # Builds for: linux/amd64, linux/arm64, linux/arm/v7
 #
-# Turns any Raspberry Pi / Orange Pi / x86 box with a Huawei USB dongle
-# into a GSM gateway. Supports IAX2, chan_sip, and PJSIP trunks.
+# OPTIMIZED for minimal image size (~60-80 MB compressed).
+# Strips binaries, drops sounds/MOH/docs, keeps only required modules.
 #
 # Usage:
 #   docker build -t asterisk-chan-dongle .
@@ -66,8 +66,7 @@ RUN ./configure --with-jansson-bundled \
         --enable res_srtp \
         menuselect.makeopts \
     && make -j$(nproc) \
-    && make install \
-    && make samples
+    && make install
 
 # ── Build chan_dongle against our Asterisk ──────────────────────────────────
 COPY . /src/chan_dongle
@@ -75,6 +74,51 @@ WORKDIR /src/chan_dongle
 
 RUN ./configure --with-asterisk=/src/asterisk/include \
     && make
+
+# ── Slim down: strip binaries, drop unnecessary modules and data ──────────
+RUN set -eux \
+    # Strip all binaries and shared libraries (huge savings, especially ARM)
+    && strip /usr/sbin/asterisk \
+    && strip /usr/sbin/rasterisk \
+    && find /usr/lib/asterisk/modules -name '*.so' -exec strip {} + \
+    && find /usr/lib -maxdepth 1 -name 'libasterisk*' -exec strip {} + \
+    && strip /src/chan_dongle/chan_dongle.so \
+    # ── Remove ALL data dirs we don't need ──
+    && rm -rf /var/lib/asterisk/documentation \
+              /var/lib/asterisk/sounds \
+              /var/lib/asterisk/moh \
+              /var/lib/asterisk/static-http \
+              /var/lib/asterisk/rest-api \
+              /var/lib/asterisk/agi-bin \
+              /var/lib/asterisk/phoneprov \
+              /var/lib/asterisk/keys \
+    # ── Remove modules we don't need for a GSM gateway ──
+    && cd /usr/lib/asterisk/modules \
+    # CDR/CEL backends
+    && rm -f cdr_*.so cel_*.so \
+    # Database/directory backends
+    && rm -f res_odbc*.so res_config_odbc*.so res_config_ldap*.so \
+             res_config_curl*.so \
+    # Services we don't use
+    && rm -f res_calendar*.so res_fax*.so res_speech*.so \
+             res_phoneprov*.so res_adsi*.so res_smdi*.so \
+             res_snmp*.so res_corosync*.so res_xmpp*.so \
+             res_stasis*.so res_ari*.so res_http*.so \
+             res_musiconhold*.so res_mwi_devstate*.so \
+             res_parking*.so res_clioriginate*.so \
+             res_hep*.so res_prometheus*.so \
+    # Apps we don't use
+    && rm -f app_voicemail*.so app_queue*.so app_confbridge*.so \
+             app_adsiprog*.so app_alarmreceiver*.so app_festival*.so \
+             app_followme*.so app_minivm*.so app_page*.so \
+             app_agent_pool*.so app_directory*.so \
+             app_meetme*.so app_mp3*.so app_skel*.so \
+             app_jack*.so app_morsecode*.so app_saycounted*.so \
+             app_statsd*.so app_test*.so \
+    # Channel drivers we don't use
+    && rm -f chan_mgcp*.so chan_skinny*.so chan_unistim*.so \
+    # Test modules
+    && rm -f test_*.so
 
 # ── Stage 2: Slim runtime image ────────────────────────────────────────────
 FROM debian:bookworm-slim
@@ -100,29 +144,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gettext-base \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Asterisk installation from builder (binaries, modules, bundled libs, data, configs)
+# Copy only what we need from builder — no sounds, no docs, no sample configs
 COPY --from=builder /usr/sbin/asterisk          /usr/sbin/asterisk
 COPY --from=builder /usr/sbin/rasterisk         /usr/sbin/rasterisk
 COPY --from=builder /usr/lib/asterisk/          /usr/lib/asterisk/
 COPY --from=builder /usr/lib/libasterisk*       /usr/lib/
 COPY --from=builder /var/lib/asterisk/          /var/lib/asterisk/
-COPY --from=builder /var/spool/asterisk/        /var/spool/asterisk/
-COPY --from=builder /etc/asterisk/              /etc/asterisk/
-
-# Copy chan_dongle module
 COPY --from=builder /src/chan_dongle/chan_dongle.so /usr/lib/asterisk/modules/chan_dongle.so
 
-# Create required dirs and asterisk user
+# Create required dirs, user, and minimal config structure
 RUN groupadd -r asterisk \
     && useradd -r -g asterisk -d /var/lib/asterisk -s /sbin/nologin asterisk \
-    && mkdir -p /var/log/asterisk /var/run/asterisk /var/spool/asterisk /etc/asterisk/tls \
+    && mkdir -p /var/log/asterisk /var/run/asterisk /var/spool/asterisk \
+               /etc/asterisk/tls \
     && chown -R asterisk:asterisk /etc/asterisk /var/lib/asterisk \
        /var/log/asterisk /var/run/asterisk /var/spool/asterisk \
        /usr/lib/asterisk
 
-# Copy config templates (entrypoint picks the right ones based on TRUNK_PROTO)
-COPY docker/configs/ /etc/asterisk/templates/
+# Copy our configs (no sample configs from Asterisk — only what we need)
+COPY docker/configs/asterisk.conf /etc/asterisk/asterisk.conf
+COPY docker/configs/logger.conf  /etc/asterisk/logger.conf
 COPY docker/configs/modules.conf /etc/asterisk/modules.conf
+COPY docker/configs/ /etc/asterisk/templates/
 
 # Copy entrypoint
 COPY docker/entrypoint.sh /entrypoint.sh
