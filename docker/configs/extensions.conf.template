@@ -1,14 +1,14 @@
 ;; extensions.conf — Auto-generated at container startup
-;; Dialplan: GSM dongle <-> IAX2 trunk gateway
+;; Dialplan: GSM dongle <-> trunk gateway
+;; TRUNK_DIAL is set by entrypoint based on TRUNK_PROTO
 
 [general]
 static=yes
 writeprotect=no
 
-; ── Inbound from IAX trunk (remote PBX wants to place a call via dongle) ───
+; ── Inbound from trunk (remote PBX wants to place a call via dongle) ───────
 [${DONGLE_CONTEXT}]
-; Remote PBX sends calls with the destination number as the extension
-exten => _X.,1,NoOp(Inbound from IAX trunk to ${EXTEN})
+exten => _X.,1,NoOp(Inbound from trunk to ${EXTEN})
  same => n,Set(CALLERID(num)=${CALLERID(num)})
  same => n,Dial(Dongle/g0/${EXTEN},120,tT)
  same => n,Hangup()
@@ -17,7 +17,7 @@ exten => _X.,1,NoOp(Inbound from IAX trunk to ${EXTEN})
 [dongle-incoming]
 exten => s,1,NoOp(Incoming GSM call from ${CALLERID(num)})
  same => n,Set(CALLERID(dnid)=${DONGLEIMEI})
- same => n,Dial(IAX2/iax-trunk/${CALLERID(num)},120,tT)
+ same => n,Dial(${TRUNK_DIAL}/${CALLERID(num)},120,tT)
  same => n,Hangup()
 
 ; Handle incoming SMS

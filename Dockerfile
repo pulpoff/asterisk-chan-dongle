@@ -1,29 +1,79 @@
 ###############################################################################
-# Multi-arch Dockerfile: Asterisk 20 + chan_dongle
+# Multi-arch Dockerfile: Asterisk 20 LTS (from source) + chan_dongle
 # Builds for: linux/amd64, linux/arm64, linux/arm/v7
 #
 # Turns any Raspberry Pi / Orange Pi / x86 box with a Huawei USB dongle
-# into a GSM <-> IAX2 gateway. Just provide IAX2 credentials and a host.
+# into a GSM gateway. Supports IAX2, chan_sip, and PJSIP trunks.
 #
 # Usage:
 #   docker build -t asterisk-chan-dongle .
 #   docker run --rm --privileged -v /dev/bus/usb:/dev/bus/usb \
-#     -e IAX_USER=myuser -e IAX_PASS=mypass -e IAX_HOST=pbx.example.com \
-#     asterisk-chan-dongle
+#     -e TRUNK_PROTO=iax -e TRUNK_USER=myuser -e TRUNK_PASS=mypass \
+#     -e TRUNK_HOST=pbx.example.com asterisk-chan-dongle
 ###############################################################################
 
-# ── Stage 1: Build chan_dongle ──────────────────────────────────────────────
+# ── Stage 1: Build Asterisk 20 LTS + chan_dongle from source ────────────────
 FROM debian:bookworm-slim AS builder
+
+ARG ASTERISK_VER=20-current
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         autoconf \
         automake \
-        asterisk-dev \
-        libiconv-hook-dev \
+        libtool \
+        pkg-config \
         ca-certificates \
+        wget \
+        # Asterisk build dependencies
+        libncurses5-dev \
+        libxml2-dev \
+        libsqlite3-dev \
+        uuid-dev \
+        libjansson-dev \
+        libssl-dev \
+        libedit-dev \
+        libsrtp2-dev \
+        # chan_dongle needs iconv
+        libc6-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# ── Build Asterisk 20 LTS ──────────────────────────────────────────────────
+WORKDIR /src
+RUN wget -q "https://downloads.asterisk.org/pub/telephony/asterisk/asterisk-${ASTERISK_VER}.tar.gz" \
+    && tar xzf asterisk-${ASTERISK_VER}.tar.gz \
+    && rm asterisk-${ASTERISK_VER}.tar.gz \
+    && mv asterisk-20.* asterisk
+
+WORKDIR /src/asterisk
+RUN contrib/scripts/install_prereq install \
+    || true
+RUN ./configure --with-jansson-bundled \
+    && make menuselect.makeopts \
+    && menuselect/menuselect \
+        --enable chan_iax2 \
+        --enable chan_sip \
+        --enable chan_pjsip \
+        --enable format_gsm \
+        --enable codec_ulaw \
+        --enable codec_alaw \
+        --enable codec_gsm \
+        --enable res_rtp_asterisk \
+        --enable res_pjsip \
+        --enable res_pjsip_session \
+        --enable res_pjsip_authenticator_digest \
+        --enable res_pjsip_outbound_authenticator_digest \
+        --enable res_pjsip_registrar \
+        --enable res_pjsip_outbound_registration \
+        --enable res_pjsip_endpoint_identifier_ip \
+        --enable res_pjsip_endpoint_identifier_user \
+        --enable res_srtp \
+        menuselect.makeopts \
+    && make -j$(nproc) \
+    && make install \
+    && make samples
+
+# ── Build chan_dongle against our Asterisk ──────────────────────────────────
 COPY . /src/chan_dongle
 WORKDIR /src/chan_dongle
 
@@ -32,15 +82,22 @@ RUN autoconf \
     && make clean \
     && make
 
-# ── Stage 2: Runtime image ─────────────────────────────────────────────────
+# ── Stage 2: Slim runtime image ────────────────────────────────────────────
 FROM debian:bookworm-slim
 
 LABEL maintainer="pulpoff"
-LABEL description="Asterisk 20 + chan_dongle — GSM/IAX2 gateway for Huawei USB dongles"
+LABEL description="Asterisk 20 LTS + chan_dongle — GSM gateway with IAX2/SIP/PJSIP support"
 
+# Runtime dependencies only (no compilers)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        asterisk \
-        asterisk-modules \
+        libncurses6 \
+        libxml2 \
+        libsqlite3-0 \
+        libuuid1 \
+        libjansson4 \
+        libssl3 \
+        libedit2 \
+        libsrtp2-1 \
         usbutils \
         usb-modeswitch \
         usb-modeswitch-data \
@@ -48,28 +105,44 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gettext-base \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the compiled chan_dongle module
-COPY --from=builder /src/chan_dongle/chan_dongle.so /usr/lib/asterisk/modules/chan_dongle.so
-RUN chmod 755 /usr/lib/asterisk/modules/chan_dongle.so
+# Copy Asterisk installation from builder
+COPY --from=builder /usr/sbin/asterisk          /usr/sbin/asterisk
+COPY --from=builder /usr/sbin/rasterisk         /usr/sbin/rasterisk
+COPY --from=builder /usr/lib/asterisk/          /usr/lib/asterisk/
+COPY --from=builder /var/lib/asterisk/          /var/lib/asterisk/
+COPY --from=builder /var/spool/asterisk/        /var/spool/asterisk/
+COPY --from=builder /etc/asterisk/              /etc/asterisk/
 
-# Copy config templates (envsubst fills in IAX creds at startup)
-COPY docker/configs/iax.conf.template      /etc/asterisk/templates/iax.conf.template
-COPY docker/configs/extensions.conf.template /etc/asterisk/templates/extensions.conf.template
-COPY docker/configs/dongle.conf.template    /etc/asterisk/templates/dongle.conf.template
-COPY docker/configs/modules.conf            /etc/asterisk/modules.conf
+# Copy chan_dongle module
+COPY --from=builder /src/chan_dongle/chan_dongle.so /usr/lib/asterisk/modules/chan_dongle.so
+
+# Create required dirs and asterisk user
+RUN groupadd -r asterisk \
+    && useradd -r -g asterisk -d /var/lib/asterisk -s /sbin/nologin asterisk \
+    && mkdir -p /var/log/asterisk /var/run/asterisk /var/spool/asterisk \
+    && chown -R asterisk:asterisk /etc/asterisk /var/lib/asterisk \
+       /var/log/asterisk /var/run/asterisk /var/spool/asterisk \
+       /usr/lib/asterisk
+
+# Copy config templates (entrypoint picks the right ones based on TRUNK_PROTO)
+COPY docker/configs/ /etc/asterisk/templates/
+COPY docker/configs/modules.conf /etc/asterisk/modules.conf
 
 # Copy entrypoint
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# IAX2 default port
+# Expose ports: IAX2, SIP, RTP range
 EXPOSE 4569/udp
+EXPOSE 5060/udp
+EXPOSE 10000-10100/udp
 
-# Environment variables the user must provide
-ENV IAX_USER=""
-ENV IAX_PASS=""
-ENV IAX_HOST=""
-ENV IAX_PORT="4569"
+# Environment variables
+ENV TRUNK_PROTO="iax"
+ENV TRUNK_USER=""
+ENV TRUNK_PASS=""
+ENV TRUNK_HOST=""
+ENV TRUNK_PORT=""
 ENV DONGLE_CONTEXT="from-dongle"
 
 ENTRYPOINT ["/entrypoint.sh"]
