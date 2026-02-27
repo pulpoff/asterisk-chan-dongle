@@ -33,24 +33,86 @@ Supported features:
 
 ---
 
-## Docker Install
+## Docker Quick Start
+
+Plug in your Huawei dongle, then:
 
 ```bash
-# 1. Create a .env file
-cat > .env << 'EOF'
-TRUNK_PROTO=iax
-TRUNK_USER=myuser
-TRUNK_PASS=mypass
-TRUNK_HOST=pbx.example.com
-DONGLE_CONTEXT=from-dongle
-EOF
-
-# 2. Download docker-compose.yml
+# 1. Download compose file and env template
 curl -O https://raw.githubusercontent.com/pulpoff/asterisk-chan-dongle/master/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/pulpoff/asterisk-chan-dongle/master/docker/.env.example
+
+# 2. Edit .env with your trunk credentials
+nano .env
 
 # 3. Start
 docker compose up -d
 ```
+
+The container auto-restarts on reboot (`restart: unless-stopped`).
+
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `TRUNK_PROTO` | no | `iax` | Trunk protocol: `iax`, `sip`, or `pjsip` |
+| `TRUNK_USER` | **yes** | — | Trunk account username |
+| `TRUNK_PASS` | **yes** | — | Trunk account password |
+| `TRUNK_HOST` | **yes** | — | PBX server hostname or IP |
+| `TRUNK_PORT` | no | `4569` (IAX) / `5060` (SIP) | Trunk port |
+| `DONGLE_CONTEXT` | no | `from-dongle` | Dialplan context for inbound dongle calls |
+
+### Verify It Works
+
+```bash
+# Check logs
+docker logs asterisk-dongle
+
+# You should see:
+#   [dongle0] Dongle initialized and ready
+#   Asterisk Ready.
+
+# Enter Asterisk CLI
+docker exec -it asterisk-dongle asterisk -rvvv
+
+# Check dongle status
+#   asterisk*CLI> dongle show devices
+```
+
+### Alternative: `docker run`
+
+```bash
+docker run -d \
+  --name asterisk-dongle \
+  --restart unless-stopped \
+  --privileged \
+  --net=host \
+  -v /dev/bus/usb:/dev/bus/usb \
+  -e TRUNK_PROTO=iax \
+  -e TRUNK_USER=myuser \
+  -e TRUNK_PASS=mypass \
+  -e TRUNK_HOST=pbx.example.com \
+  ghcr.io/pulpoff/asterisk-chan-dongle:latest
+```
+
+### Custom Config Overrides
+
+To override any generated Asterisk config file:
+
+```bash
+mkdir configs
+# Copy the generated config out, edit it, mount it back
+docker cp asterisk-dongle:/etc/asterisk/dongle.conf configs/
+nano configs/dongle.conf
+```
+
+Then uncomment the volume mount in `docker-compose.yml`:
+```yaml
+volumes:
+  - ./configs:/etc/asterisk/custom:ro
+```
+
+Restart and your custom configs replace the generated ones.
 
 ---
 
