@@ -143,7 +143,7 @@ RUN set -eux; \
     rm -f res_calendar*.so res_fax*.so res_speech*.so \
           res_phoneprov*.so res_adsi*.so res_smdi*.so \
           res_snmp*.so res_corosync*.so res_xmpp*.so \
-          res_stasis*.so res_ari*.so res_http*.so \
+          res_ari*.so \
           res_musiconhold*.so res_mwi_devstate*.so \
           res_parking*.so res_clioriginate*.so \
           res_hep*.so res_prometheus*.so; \
