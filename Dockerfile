@@ -103,24 +103,15 @@ ac_cv_cxx_compiler_gnu=yes
 SITE
 
 RUN export CONFIG_SITE=/tmp/config.site \
-    && ./configure \
+    && ./configure --without-pjproject-bundled \
     && make menuselect.makeopts \
     && menuselect/menuselect \
         --enable chan_iax2 \
         --enable chan_sip \
-        --enable chan_pjsip \
         --enable format_gsm \
         --enable codec_alaw \
         --enable codec_g722 \
         --enable res_rtp_asterisk \
-        --enable res_pjsip \
-        --enable res_pjsip_session \
-        --enable res_pjsip_authenticator_digest \
-        --enable res_pjsip_outbound_authenticator_digest \
-        --enable res_pjsip_registrar \
-        --enable res_pjsip_outbound_registration \
-        --enable res_pjsip_endpoint_identifier_ip \
-        --enable res_pjsip_endpoint_identifier_user \
         --enable res_srtp \
         menuselect.makeopts \
     && for attempt in 1 2 3 4 5; do \
