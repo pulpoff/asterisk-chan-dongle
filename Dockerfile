@@ -95,7 +95,7 @@ ac_cv_header_openssl_crypto_h=yes
 ac_cv_header_uuid_uuid_h=yes
 SITE
 
-RUN CONFIG_SITE=/tmp/config.site ./configure --with-jansson-bundled \
+RUN CONFIG_SITE=/tmp/config.site ./configure \
     && make menuselect.makeopts \
     && menuselect/menuselect \
         --enable chan_iax2 \
@@ -115,7 +115,7 @@ RUN CONFIG_SITE=/tmp/config.site ./configure --with-jansson-bundled \
         --enable res_pjsip_endpoint_identifier_user \
         --enable res_srtp \
         menuselect.makeopts \
-    && make -j$(nproc) \
+    && MAKEFLAGS="-j1" make \
     && make install
 
 # ── Build chan_dongle against our Asterisk ──────────────────────────────────
