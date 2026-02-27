@@ -1,0 +1,38 @@
+;; sip.conf — Auto-generated at container startup (chan_sip)
+;; Set TRUNK_PROTO=sip to use this.
+
+[general]
+context=default
+allowoverlap=no
+udpbindaddr=0.0.0.0:5060
+tcpenable=no
+transport=udp
+srvlookup=yes
+disallow=all
+allow=ulaw
+allow=alaw
+allow=gsm
+qualify=yes
+nat=force_rport,comedia
+directmedia=no
+
+; ── Registration to remote PBX ──────────────────────────────────────────────
+register => ${TRUNK_USER}:${TRUNK_PASS}@${TRUNK_HOST}:${TRUNK_PORT}/${TRUNK_USER}
+
+; ── Trunk definition ────────────────────────────────────────────────────────
+[sip-trunk]
+type=friend
+host=${TRUNK_HOST}
+port=${TRUNK_PORT}
+username=${TRUNK_USER}
+secret=${TRUNK_PASS}
+fromuser=${TRUNK_USER}
+context=${DONGLE_CONTEXT}
+insecure=invite,port
+qualify=yes
+nat=force_rport,comedia
+directmedia=no
+disallow=all
+allow=ulaw
+allow=alaw
+allow=gsm

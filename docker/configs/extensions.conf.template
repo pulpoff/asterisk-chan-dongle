@@ -1,0 +1,31 @@
+;; extensions.conf — Auto-generated at container startup
+;; Dialplan: GSM dongle <-> trunk gateway
+;; TRUNK_DIAL is set by entrypoint based on TRUNK_PROTO
+
+[general]
+static=yes
+writeprotect=no
+
+; ── Inbound from trunk (remote PBX wants to place a call via dongle) ───────
+[${DONGLE_CONTEXT}]
+exten => _X.,1,NoOp(Inbound from trunk to ${EXTEN})
+ same => n,Set(CALLERID(num)=${CALLERID(num)})
+ same => n,Dial(Dongle/g0/${EXTEN},120,tT)
+ same => n,Hangup()
+
+; ── Inbound from Dongle (someone calls the SIM card) ───────────────────────
+[dongle-incoming]
+exten => s,1,NoOp(Incoming GSM call from ${CALLERID(num)})
+ same => n,Set(CALLERID(dnid)=${DONGLEIMEI})
+ same => n,Dial(${TRUNK_DIAL}/${CALLERID(num)},120,tT)
+ same => n,Hangup()
+
+; Handle incoming SMS
+exten => sms,1,NoOp(Incoming SMS from ${CALLERID(num)})
+ same => n,Set(sms=${SMS})
+ same => n,Set(sms_full=${BASE64_DECODE(${SMS_BASE64})})
+ same => n,Hangup()
+
+; Handle USSD responses
+exten => ussd,1,NoOp(USSD response: ${USSD})
+ same => n,Hangup()
