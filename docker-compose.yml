@@ -1,0 +1,30 @@
+###############################################################################
+# docker-compose.yml — Asterisk + chan_dongle GSM/IAX2 Gateway
+#
+# Usage:
+#   IAX_USER=myuser IAX_PASS=mypass IAX_HOST=pbx.example.com docker compose up -d
+#
+# Or create a .env file (see docker/.env.example)
+###############################################################################
+
+services:
+  asterisk-dongle:
+    build: .
+    image: ghcr.io/pulpoff/asterisk-chan-dongle:latest
+    container_name: asterisk-dongle
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+    environment:
+      - IAX_USER=${IAX_USER}
+      - IAX_PASS=${IAX_PASS}
+      - IAX_HOST=${IAX_HOST}
+      - IAX_PORT=${IAX_PORT:-4569}
+      - DONGLE_CONTEXT=${DONGLE_CONTEXT:-from-dongle}
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+      - /dev/ttyUSB1:/dev/ttyUSB1
+      - /dev/ttyUSB2:/dev/ttyUSB2
+      - /dev/ttyUSB3:/dev/ttyUSB3

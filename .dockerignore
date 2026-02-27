@@ -1,0 +1,15 @@
+.git
+.github
+*.o
+*.so
+*.core
+autom4te.cache
+.*.d
+config.status
+config.log
+config.h
+Makefile
+stamp-h
+test/test1
+test/parse
+tools/discovery

@@ -1,0 +1,34 @@
+;; iax.conf — Auto-generated at container startup
+;; Do not edit manually; set IAX_USER / IAX_PASS / IAX_HOST env vars instead.
+
+[general]
+bindport=4569
+bindaddr=0.0.0.0
+disallow=all
+allow=ulaw
+allow=alaw
+allow=gsm
+jitterbuffer=yes
+forcejitterbuffer=yes
+autokill=yes
+
+; ── Registration to remote PBX ──────────────────────────────────────────────
+register => ${IAX_USER}:${IAX_PASS}@${IAX_HOST}:${IAX_PORT}
+
+; ── Trunk/peer definition for remote PBX ────────────────────────────────────
+[iax-trunk]
+type=friend
+host=${IAX_HOST}
+port=${IAX_PORT}
+username=${IAX_USER}
+secret=${IAX_PASS}
+context=${DONGLE_CONTEXT}
+trunk=yes
+qualify=yes
+qualifyfreqok=60
+qualifyfreqnotok=10
+disallow=all
+allow=ulaw
+allow=alaw
+allow=gsm
+auth=plaintext
