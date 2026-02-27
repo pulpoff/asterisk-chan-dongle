@@ -75,9 +75,9 @@ if [ ! -f "$KEYS_DIR/iax.key" ]; then
     echo ">> No IAX2 RSA keys found, generating..."
     astgenkey -n -q "$KEYS_DIR/iax" 2>/dev/null || {
         # astgenkey may not be available; fall back to openssl
-        # Asterisk requires traditional RSA format (not PKCS#8)
+        # Asterisk 20+ uses PEM_read_PUBKEY (PKCS#8 SubjectPublicKeyInfo format)
         openssl genrsa -traditional -out "$KEYS_DIR/iax.key" 1024 2>/dev/null
-        openssl rsa -in "$KEYS_DIR/iax.key" -RSAPublicKey_out -out "$KEYS_DIR/iax.pub" 2>/dev/null
+        openssl rsa -in "$KEYS_DIR/iax.key" -pubout -out "$KEYS_DIR/iax.pub" 2>/dev/null
     }
     chmod 600 "$KEYS_DIR/iax.key"
     echo "   IAX2 RSA keys generated in $KEYS_DIR"
