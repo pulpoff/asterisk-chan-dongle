@@ -5,33 +5,25 @@
 interval=15
 
 [defaults]
-context=dongle-incoming
+context=${DONGLE_CONTEXT}
 group=0
-rxgain=3
-txgain=3
+rxgain=0
+txgain=-3
 autodeletesms=yes
 resetdongle=yes
-u2diag=-1
-usecallingpres=yes
-callingpres=allowed_passed_screen
+u2diag=0
 disablesms=no
-language=en
 smsaspdu=yes
-mindtmfgap=45
-mindtmfduration=80
-mindtmfinterval=200
 callwaiting=auto
-initstate=start
 dtmf=relax
+usecallingpres=yes
 
-; ── Auto-discovered dongles ─────────────────────────────────────────────────
-; chan_dongle will automatically discover Huawei USB devices.
-; If auto-discovery does not work, uncomment and configure manually:
-;
-; [dongle0]
-; audio=/dev/ttyUSB1
-; data=/dev/ttyUSB2
-;
-; Or use IMEI-based discovery (recommended for stable device naming):
-; [dongle0]
-; imei=123456789012345
+; ── Dongle device ─────────────────────────────────────────────────────────
+[dongle0]
+audio=/dev/ttyUSB1
+data=/dev/ttyUSB2
+u2diag=0
+init=AT^U2DIAG=0
+; To use IMEI/IMSI-based discovery instead of fixed /dev/ttyUSB paths:
+; imei=YOUR_DEVICE_15_DIGIT_IMEI
+; imsi=YOUR_SIM_CARD_15_DIGIT_IMSI

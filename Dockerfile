@@ -51,9 +51,8 @@ RUN ./configure --with-jansson-bundled \
         --enable chan_sip \
         --enable chan_pjsip \
         --enable format_gsm \
-        --enable codec_ulaw \
         --enable codec_alaw \
-        --enable codec_gsm \
+        --enable codec_g722 \
         --enable res_rtp_asterisk \
         --enable res_pjsip \
         --enable res_pjsip_session \

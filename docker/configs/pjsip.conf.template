@@ -16,38 +16,37 @@ ca_list_file=/etc/asterisk/tls/ca.crt
 method=tlsv1_2
 
 ; ── Auth ────────────────────────────────────────────────────────────────────
-[pjsip-trunk-auth]
+[trunk-auth]
 type=auth
 auth_type=userpass
 username=${TRUNK_USER}
 password=${TRUNK_PASS}
 
 ; ── Registration to remote PBX ──────────────────────────────────────────────
-[pjsip-trunk-reg]
+[trunk-reg]
 type=registration
 transport=transport-tls
-outbound_auth=pjsip-trunk-auth
+outbound_auth=trunk-auth
 server_uri=sips:${TRUNK_HOST}:${TRUNK_PORT}
 client_uri=sips:${TRUNK_USER}@${TRUNK_HOST}:${TRUNK_PORT}
 retry_interval=60
 
 ; ── AOR (Address of Record) ─────────────────────────────────────────────────
-[pjsip-trunk-aor]
+[trunk-aor]
 type=aor
 contact=sip:${TRUNK_HOST}:${TRUNK_PORT}
 qualify_frequency=60
 
 ; ── Endpoint ────────────────────────────────────────────────────────────────
-[pjsip-trunk]
+[trunk]
 type=endpoint
 transport=transport-tls
-context=${DONGLE_CONTEXT}
+context=from-trunk
 disallow=all
-allow=ulaw
+allow=g722
 allow=alaw
-allow=gsm
-outbound_auth=pjsip-trunk-auth
-aors=pjsip-trunk-aor
+outbound_auth=trunk-auth
+aors=trunk-aor
 from_user=${TRUNK_USER}
 direct_media=no
 rtp_symmetric=yes
@@ -56,7 +55,7 @@ rewrite_contact=yes
 media_encryption=sdes
 
 ; ── Identify (match inbound by IP) ──────────────────────────────────────────
-[pjsip-trunk-identify]
+[trunk-identify]
 type=identify
-endpoint=pjsip-trunk
+endpoint=trunk
 match=${TRUNK_HOST}
