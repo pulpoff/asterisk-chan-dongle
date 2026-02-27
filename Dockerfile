@@ -123,9 +123,9 @@ RUN set -eux; \
     find /usr/lib/asterisk/modules -name '*.so' -exec $STRIP {} +; \
     find /usr/lib -maxdepth 1 -name 'libasterisk*' -exec $STRIP {} +; \
     $STRIP /src/chan_dongle/chan_dongle.so; \
-    # ── Remove ALL data dirs we don't need ──
-    rm -rf /var/lib/asterisk/documentation \
-           /var/lib/asterisk/sounds \
+    # ── Remove data dirs we don't need ──
+    # NOTE: keep /var/lib/asterisk/documentation — Stasis/ACO needs the XML docs
+    rm -rf /var/lib/asterisk/sounds \
            /var/lib/asterisk/moh \
            /var/lib/asterisk/static-http \
            /var/lib/asterisk/rest-api \
