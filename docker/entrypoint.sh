@@ -102,6 +102,20 @@ case "$TRUNK_PROTO" in
         ;;
 esac
 
+# ── Apply user config overrides ───────────────────────────────────────────
+CUSTOM_DIR="/etc/asterisk/custom"
+if [ -d "$CUSTOM_DIR" ] && ls "$CUSTOM_DIR"/*.conf &>/dev/null; then
+    echo ">> Applying custom config overrides from $CUSTOM_DIR:"
+    for f in "$CUSTOM_DIR"/*.conf; do
+        fname=$(basename "$f")
+        cp "$f" "/etc/asterisk/$fname"
+        echo "   $fname (override)"
+    done
+else
+    echo ">> No custom config overrides found"
+    echo "   Mount .conf files to $CUSTOM_DIR/ to override generated configs"
+fi
+
 # ── Detect USB dongles ──────────────────────────────────────────────────────
 echo ">> Checking for Huawei USB dongles..."
 if command -v lsusb &>/dev/null; then
