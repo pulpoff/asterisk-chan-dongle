@@ -2,34 +2,23 @@
 ;; Set TRUNK_PROTO=iax to use this.
 
 [general]
-bindport=4569
-bindaddr=0.0.0.0
-disallow=all
-allow=ulaw
-allow=alaw
-allow=gsm
-jitterbuffer=yes
-forcejitterbuffer=yes
+calltokenoptional=0.0.0.0/0.0.0.0
+bandwidth=low
+jitterbuffer=no
+forcejitterbuffer=no
+tos=lowdelay
 autokill=yes
-
-; ── Registration to remote PBX ──────────────────────────────────────────────
+context=incoming
 register => ${TRUNK_USER}:${TRUNK_PASS}@${TRUNK_HOST}:${TRUNK_PORT}
-
-; ── Trunk/peer definition ───────────────────────────────────────────────────
-[iax-trunk]
-type=friend
-host=${TRUNK_HOST}
-port=${TRUNK_PORT}
-username=${TRUNK_USER}
-secret=${TRUNK_PASS}
-context=${DONGLE_CONTEXT}
-trunk=yes
-qualify=yes
-qualifyfreqok=60
-qualifyfreqnotok=10
+authdebug=yes
 disallow=all
-allow=ulaw
-allow=alaw
-allow=gsm
-auth=plaintext
-encryption=aes128
+allow=g722
+encryption=yes
+
+; ── Trunk definition ──────────────────────────────────────────────────────
+[trunk]
+type=friend
+secret=${TRUNK_PASS}
+host=${TRUNK_HOST}
+username=${TRUNK_USER}
+context=from-trunk

@@ -25,14 +25,14 @@ tlsdontverifyserver=yes
 register => ${TRUNK_USER}:${TRUNK_PASS}@${TRUNK_HOST}:${TRUNK_PORT}/${TRUNK_USER}
 
 ; ── Trunk definition ────────────────────────────────────────────────────────
-[sip-trunk]
+[trunk]
 type=friend
 host=${TRUNK_HOST}
 port=${TRUNK_PORT}
 username=${TRUNK_USER}
 secret=${TRUNK_PASS}
 fromuser=${TRUNK_USER}
-context=${DONGLE_CONTEXT}
+context=from-trunk
 insecure=invite,port
 qualify=yes
 nat=force_rport,comedia

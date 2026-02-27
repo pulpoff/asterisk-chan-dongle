@@ -33,17 +33,17 @@ case "$TRUNK_PROTO" in
     iax|iax2)
         TRUNK_PROTO="iax"
         TRUNK_PORT="${TRUNK_PORT:-4569}"
-        TRUNK_DIAL="IAX2/iax-trunk"
+        TRUNK_DIAL="IAX2/trunk"
         ;;
     sip|chan_sip)
         TRUNK_PROTO="sip"
         TRUNK_PORT="${TRUNK_PORT:-5060}"
-        TRUNK_DIAL="SIP/sip-trunk"
+        TRUNK_DIAL="SIP/trunk"
         ;;
     pjsip|chan_pjsip)
         TRUNK_PROTO="pjsip"
         TRUNK_PORT="${TRUNK_PORT:-5060}"
-        TRUNK_DIAL="PJSIP/pjsip-trunk"
+        TRUNK_DIAL="PJSIP/trunk"
         ;;
     *)
         echo "ERROR: Unknown TRUNK_PROTO='$TRUNK_PROTO'. Use: iax, sip, or pjsip"

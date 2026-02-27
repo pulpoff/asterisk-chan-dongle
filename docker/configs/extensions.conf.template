@@ -4,28 +4,61 @@
 
 [general]
 static=yes
-writeprotect=no
+writeprotect=yes
+autofallthrough=yes
 
-; ── Inbound from trunk (remote PBX wants to place a call via dongle) ───────
+; ═══════════════════════════════════════════════════════════════
+; FROM-TRUNK — Outbound calls from remote PBX via dongle
+; Remote PBX sends calls to this context; we dial out via GSM.
+; ═══════════════════════════════════════════════════════════════
+[from-trunk]
+; Numbers with + prefix — strip + and dial
+exten => _+.,1,NoOp(=== Outbound dongle call to ${EXTEN} from ${CALLERID(num)} (stripping +) ===)
+ same => n,Set(DIALNUM=${EXTEN})
+ same => n,Set(TIMEOUT(absolute)=1800)
+ same => n,Dial(Dongle/dongle0/${DIALNUM},60,Tt)
+ same => n,NoOp(Dial result: ${DIALSTATUS})
+ same => n,Hangup()
+
+; Regular phone numbers (3+ digits)
+exten => _X.,1,NoOp(=== Outbound dongle call to ${EXTEN} from ${CALLERID(num)} ===)
+ same => n,Set(TIMEOUT(absolute)=1800)
+ same => n,Dial(Dongle/dongle0/${EXTEN},60,Tt)
+ same => n,NoOp(Dial result: ${DIALSTATUS})
+ same => n,Hangup()
+
+; ═══════════════════════════════════════════════════════════════
+; FROM-DONGLE — Inbound calls from GSM network
+; Someone calls the SIM card → forward to remote PBX.
+; Passes REAL_CALLER and REAL_CALLED via IAXVAR for DID routing.
+; ═══════════════════════════════════════════════════════════════
 [${DONGLE_CONTEXT}]
-exten => _X.,1,NoOp(Inbound from trunk to ${EXTEN})
- same => n,Set(CALLERID(num)=${CALLERID(num)})
- same => n,Dial(Dongle/g0/${EXTEN},120,tT)
+; Numbers with + prefix (standard GSM caller IDs)
+exten => _+.,1,Answer()
+ same => n,Set(IAXVAR(REAL_CALLER)=${CALLERID(num)})
+ same => n,Set(MOBILE=${SHELL(asterisk -rx 'dongle show devices' | grep dongle0 | awk '{print $NF}')})
+ same => n,Set(MOBILE=${MOBILE})
+ same => n,Set(IAXVAR(REAL_CALLED)=${MOBILE})
+ same => n,Set(TIMEOUT(absolute)=1800)
+ same => n,Dial(${TRUNK_DIAL}/${MOBILE},30,Tt)
  same => n,Hangup()
 
-; ── Inbound from Dongle (someone calls the SIM card) ───────────────────────
-[dongle-incoming]
-exten => s,1,NoOp(Incoming GSM call from ${CALLERID(num)})
- same => n,Set(CALLERID(dnid)=${DONGLEIMEI})
- same => n,Dial(${TRUNK_DIAL}/${CALLERID(num)},120,tT)
+; Regular numbers without + prefix
+exten => _X.,1,Answer()
+ same => n,Set(IAXVAR(REAL_CALLER)=${CALLERID(num)})
+ same => n,Set(MOBILE=${SHELL(asterisk -rx 'dongle show devices' | grep dongle0 | awk '{print $NF}')})
+ same => n,Set(MOBILE=${MOBILE})
+ same => n,Set(IAXVAR(REAL_CALLED)=${MOBILE})
+ same => n,Set(TIMEOUT(absolute)=1800)
+ same => n,Dial(${TRUNK_DIAL}/${MOBILE},30,Tt)
  same => n,Hangup()
 
-; Handle incoming SMS
-exten => sms,1,NoOp(Incoming SMS from ${CALLERID(num)})
- same => n,Set(sms=${SMS})
- same => n,Set(sms_full=${BASE64_DECODE(${SMS_BASE64})})
- same => n,Hangup()
-
-; Handle USSD responses
-exten => ussd,1,NoOp(USSD response: ${USSD})
+; No DID (extension = s)
+exten => s,1,Answer()
+ same => n,Set(IAXVAR(REAL_CALLER)=${CALLERID(num)})
+ same => n,Set(MOBILE=${SHELL(asterisk -rx 'dongle show devices' | grep dongle0 | awk '{print $NF}')})
+ same => n,Set(MOBILE=${MOBILE})
+ same => n,Set(IAXVAR(REAL_CALLED)=${MOBILE})
+ same => n,Set(TIMEOUT(absolute)=1800)
+ same => n,Dial(${TRUNK_DIAL}/${MOBILE},30,Tt)
  same => n,Hangup()
