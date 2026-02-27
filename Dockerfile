@@ -93,9 +93,17 @@ ac_cv_header_sqlite3_h=yes
 ac_cv_header_openssl_ssl_h=yes
 ac_cv_header_openssl_crypto_h=yes
 ac_cv_header_uuid_uuid_h=yes
+# C/C++ compiler checks (pjproject aconfigure needs these under QEMU)
+ac_cv_prog_CC=gcc
+ac_cv_prog_CXX=g++
+ac_cv_prog_cc_g=yes
+ac_cv_prog_cxx_g=yes
+ac_cv_c_compiler_gnu=yes
+ac_cv_cxx_compiler_gnu=yes
 SITE
 
-RUN CONFIG_SITE=/tmp/config.site ./configure \
+RUN export CONFIG_SITE=/tmp/config.site \
+    && ./configure \
     && make menuselect.makeopts \
     && menuselect/menuselect \
         --enable chan_iax2 \
@@ -115,7 +123,7 @@ RUN CONFIG_SITE=/tmp/config.site ./configure \
         --enable res_pjsip_endpoint_identifier_user \
         --enable res_srtp \
         menuselect.makeopts \
-    && MAKEFLAGS="-j1" make \
+    && MAKEFLAGS="-j1" CONFIG_SITE=/tmp/config.site make \
     && make install
 
 # ── Build chan_dongle against our Asterisk ──────────────────────────────────
