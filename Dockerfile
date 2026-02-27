@@ -73,7 +73,7 @@ RUN ./configure --with-jansson-bundled \
 COPY . /src/chan_dongle
 WORKDIR /src/chan_dongle
 
-RUN ./configure --with-asterisk=/usr/include \
+RUN ./configure --with-asterisk=/src/asterisk/include \
     && make
 
 # ── Stage 2: Slim runtime image ────────────────────────────────────────────
