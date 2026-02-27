@@ -95,7 +95,7 @@ ac_cv_header_openssl_crypto_h=yes
 ac_cv_header_uuid_uuid_h=yes
 SITE
 
-RUN CONFIG_SITE=/tmp/config.site ./configure --with-jansson-bundled \
+RUN CONFIG_SITE=/tmp/config.site ./configure \
     && make menuselect.makeopts \
     && menuselect/menuselect \
         --enable chan_iax2 \
