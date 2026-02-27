@@ -123,7 +123,10 @@ RUN export CONFIG_SITE=/tmp/config.site \
         --enable res_pjsip_endpoint_identifier_user \
         --enable res_srtp \
         menuselect.makeopts \
-    && MAKEFLAGS="-j1" CONFIG_SITE=/tmp/config.site make \
+    && for attempt in 1 2 3 4 5; do \
+        MAKEFLAGS="-j1" CONFIG_SITE=/tmp/config.site make 2>&1 && break; \
+        echo ">> Build attempt $attempt failed (QEMU cc1 segfault), retrying..."; \
+    done \
     && make install
 
 # ── Build chan_dongle against our Asterisk ──────────────────────────────────
