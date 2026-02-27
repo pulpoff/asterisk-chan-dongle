@@ -51,6 +51,24 @@ case "$TRUNK_PROTO" in
         ;;
 esac
 
+# ── Generate TLS certificates if not mounted ────────────────────────────────
+TLS_DIR="/etc/asterisk/tls"
+if [ ! -f "$TLS_DIR/asterisk.pem" ]; then
+    echo ">> No TLS certificate found, generating self-signed cert..."
+    openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
+        -subj "/CN=asterisk-dongle/O=chan-dongle" \
+        -keyout "$TLS_DIR/asterisk.key" \
+        -out "$TLS_DIR/asterisk.crt" \
+        2>/dev/null
+    cat "$TLS_DIR/asterisk.key" "$TLS_DIR/asterisk.crt" > "$TLS_DIR/asterisk.pem"
+    cp "$TLS_DIR/asterisk.crt" "$TLS_DIR/ca.crt"
+    chmod 600 "$TLS_DIR/asterisk.key" "$TLS_DIR/asterisk.pem"
+    echo "   Self-signed TLS certificate generated in $TLS_DIR"
+    echo "   Mount your own certs to $TLS_DIR/ to use real certificates"
+else
+    echo ">> Using existing TLS certificate: $TLS_DIR/asterisk.pem"
+fi
+
 # ── Generate Asterisk configs from templates ────────────────────────────────
 echo ">> Generating Asterisk configs..."
 echo "   Protocol : $TRUNK_PROTO"

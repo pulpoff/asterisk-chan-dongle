@@ -5,8 +5,6 @@
 context=default
 allowoverlap=no
 udpbindaddr=0.0.0.0:5060
-tcpenable=no
-transport=udp
 srvlookup=yes
 disallow=all
 allow=ulaw
@@ -15,6 +13,13 @@ allow=gsm
 qualify=yes
 nat=force_rport,comedia
 directmedia=no
+
+; TLS support
+tlsenable=yes
+tlsbindaddr=0.0.0.0:5061
+tlscertfile=/etc/asterisk/tls/asterisk.pem
+tlscafile=/etc/asterisk/tls/ca.crt
+tlsdontverifyserver=yes
 
 ; ── Registration to remote PBX ──────────────────────────────────────────────
 register => ${TRUNK_USER}:${TRUNK_PASS}@${TRUNK_HOST}:${TRUNK_PORT}/${TRUNK_USER}
@@ -32,6 +37,8 @@ insecure=invite,port
 qualify=yes
 nat=force_rport,comedia
 directmedia=no
+transport=tls
+encryption=yes
 disallow=all
 allow=ulaw
 allow=alaw

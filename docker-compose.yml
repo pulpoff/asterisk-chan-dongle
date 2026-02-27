@@ -17,6 +17,9 @@ services:
     network_mode: host
     volumes:
       - /dev/bus/usb:/dev/bus/usb
+      # Optional: mount your own TLS certs (self-signed generated if absent)
+      # - ./tls/asterisk.pem:/etc/asterisk/tls/asterisk.pem:ro
+      # - ./tls/ca.crt:/etc/asterisk/tls/ca.crt:ro
     environment:
       - TRUNK_PROTO=${TRUNK_PROTO:-iax}
       - TRUNK_USER=${TRUNK_USER}
