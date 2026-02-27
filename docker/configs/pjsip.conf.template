@@ -1,11 +1,19 @@
 ;; pjsip.conf — Auto-generated at container startup (chan_pjsip)
 ;; Set TRUNK_PROTO=pjsip to use this.
 
-; ── Transport ───────────────────────────────────────────────────────────────
+; ── Transports ──────────────────────────────────────────────────────────────
 [transport-udp]
 type=transport
 protocol=udp
 bind=0.0.0.0:5060
+
+[transport-tls]
+type=transport
+protocol=tls
+bind=0.0.0.0:5061
+cert_file=/etc/asterisk/tls/asterisk.pem
+ca_list_file=/etc/asterisk/tls/ca.crt
+method=tlsv1_2
 
 ; ── Auth ────────────────────────────────────────────────────────────────────
 [pjsip-trunk-auth]
@@ -17,10 +25,10 @@ password=${TRUNK_PASS}
 ; ── Registration to remote PBX ──────────────────────────────────────────────
 [pjsip-trunk-reg]
 type=registration
-transport=transport-udp
+transport=transport-tls
 outbound_auth=pjsip-trunk-auth
-server_uri=sip:${TRUNK_HOST}:${TRUNK_PORT}
-client_uri=sip:${TRUNK_USER}@${TRUNK_HOST}:${TRUNK_PORT}
+server_uri=sips:${TRUNK_HOST}:${TRUNK_PORT}
+client_uri=sips:${TRUNK_USER}@${TRUNK_HOST}:${TRUNK_PORT}
 retry_interval=60
 
 ; ── AOR (Address of Record) ─────────────────────────────────────────────────
@@ -32,7 +40,7 @@ qualify_frequency=60
 ; ── Endpoint ────────────────────────────────────────────────────────────────
 [pjsip-trunk]
 type=endpoint
-transport=transport-udp
+transport=transport-tls
 context=${DONGLE_CONTEXT}
 disallow=all
 allow=ulaw

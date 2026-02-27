@@ -96,6 +96,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         usb-modeswitch \
         usb-modeswitch-data \
         ca-certificates \
+        openssl \
         gettext-base \
     && rm -rf /var/lib/apt/lists/*
 
@@ -114,7 +115,7 @@ COPY --from=builder /src/chan_dongle/chan_dongle.so /usr/lib/asterisk/modules/ch
 # Create required dirs and asterisk user
 RUN groupadd -r asterisk \
     && useradd -r -g asterisk -d /var/lib/asterisk -s /sbin/nologin asterisk \
-    && mkdir -p /var/log/asterisk /var/run/asterisk /var/spool/asterisk \
+    && mkdir -p /var/log/asterisk /var/run/asterisk /var/spool/asterisk /etc/asterisk/tls \
     && chown -R asterisk:asterisk /etc/asterisk /var/lib/asterisk \
        /var/log/asterisk /var/run/asterisk /var/spool/asterisk \
        /usr/lib/asterisk
@@ -127,9 +128,10 @@ COPY docker/configs/modules.conf /etc/asterisk/modules.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Expose ports: IAX2, SIP, RTP range
+# Expose ports: IAX2, SIP (UDP + TLS), RTP range
 EXPOSE 4569/udp
 EXPOSE 5060/udp
+EXPOSE 5061/tcp
 EXPOSE 10000-10100/udp
 
 # Environment variables
