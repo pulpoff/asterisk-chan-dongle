@@ -1,6 +1,4 @@
---------------------------------------------------
-chan_dongle channel driver for Huawei UMTS cards
---------------------------------------------------
+# chan_dongle — Huawei UMTS channel driver for Asterisk
 
 This fork adds support for Asterisk 20.
 
@@ -18,7 +16,7 @@ updates the module to compile and run against Asterisk 20, including:
 
 Tested with Asterisk 20.6.0 and Huawei E1762.
 
-This channel driver should work with the folowing UMTS cards:
+This channel driver should work with the following UMTS cards:
 * Huawei K3715
 * Huawei E169 / K3520
 * Huawei E155X
@@ -26,7 +24,6 @@ This channel driver should work with the folowing UMTS cards:
 * Huawei K3765
 
 Before using the channel driver make sure to:
-
 * Disable PIN code on your SIM card
 
 Supported features:
@@ -34,15 +31,48 @@ Supported features:
 * Send SMS and receive SMS
 * Send and receive USSD commands / messages
 
-Some useful AT commands:
-AT+CCWA=0,0,1                                   #disable call-waiting
-AT+CFUN=1,1                                     #reset dongle
-AT^CARDLOCK="<code>"                            #unlock code
-AT^SYSCFG=13,0,3FFFFFFF,0,3                     #modem 2G only, automatic search any band, no roaming
-AT^U2DIAG=0                                     #enable modem function
+---
 
-Here is an example for the dialplan:
+## Docker Install
 
+```bash
+# 1. Create a .env file
+cat > .env << 'EOF'
+TRUNK_PROTO=iax
+TRUNK_USER=myuser
+TRUNK_PASS=mypass
+TRUNK_HOST=pbx.example.com
+DONGLE_CONTEXT=from-dongle
+EOF
+
+# 2. Download docker-compose.yml
+curl -O https://raw.githubusercontent.com/pulpoff/asterisk-chan-dongle/master/docker-compose.yml
+
+# 3. Start
+docker compose up -d
+```
+
+---
+
+## Building from source
+
+Prerequisites:
+```
+apt install asterisk-dev
+```
+
+Build and install:
+```
+./configure
+make
+make install
+```
+
+---
+
+## Dialplan examples
+
+```ini
 [dongle-incoming]
 exten => sms,1,Verbose(Incoming SMS from ${CALLERID(num)} ${BASE64_DECODE(${SMS_BASE64})})
 exten => sms,n,System(echo '${STRFTIME(${EPOCH},,%Y-%m-%d %H:%M:%S)} - ${DONGLENAME} - ${CALLERID(num)}: ${BASE64_DECODE(${SMS_BASE64})}' >> /var/log/asterisk/sms.txt)
@@ -56,38 +86,40 @@ exten => s,1,Dial(SIP/2001@othersipserver)
 exten => s,n,Hangup()
 
 [othersipserver-incoming]
-
 exten => _X.,1,Dial(Dongle/r1/${EXTEN})
 exten => _X.,n,Hangup
+```
 
-you can also use this:
+Dial string formats:
 
-Call using a specific group:
-exten => _X.,1,Dial(Dongle/g1/${EXTEN})
+| Format | Example |
+|--------|---------|
+| Specific group | `Dongle/g1/${EXTEN}` |
+| Round-robin group | `Dongle/r1/${EXTEN}` |
+| Specific dongle | `Dongle/dongle0/${EXTEN}` |
+| By provider name | `Dongle/p:PROVIDER NAME/${EXTEN}` |
+| By IMEI | `Dongle/i:123456789012345/${EXTEN}` |
+| By IMSI prefix | `Dongle/s:25099203948/${EXTEN}` |
 
-Call using a specific group in round robin:
-exten => _X.,1,Dial(Dongle/r1/${EXTEN})
+## Useful AT commands
 
-Call using a specific dongle:
-exten => _X.,1,Dial(Dongle/dongle0/${EXTEN})
-
-Call using a specific provider name:
-exten => _X.,1,Dial(Dongle/p:PROVIDER NAME/${EXTEN})
-
-Call using a specific IMEI:
-exten => _X.,1,Dial(Dongle/i:123456789012345/${EXTEN})
-
-Call using a specific IMSI prefix:
-exten => _X.,1,Dial(Dongle/s:25099203948/${EXTEN})
+| Command | Description |
+|---------|-------------|
+| `AT+CCWA=0,0,1` | Disable call-waiting |
+| `AT+CFUN=1,1` | Reset dongle |
+| `AT^CARDLOCK="<code>"` | Unlock code |
+| `AT^SYSCFG=13,0,3FFFFFFF,0,3` | 2G only, auto band, no roaming |
+| `AT^U2DIAG=0` | Enable modem function |
 
 How to store your own number:
+```
+dongle cmd dongle0 AT+CPBS="ON"
+dongle cmd dongle0 AT+CPBW=1,"+123456789",145
+```
 
-dongle cmd dongle0 AT+CPBS=\"ON\"
-dongle cmd dongle0 AT+CPBW=1,\"+123456789\",145
+## CLI commands
 
-
-Other CLI commands:
-
+```
 dongle reset <device>
 dongle restart gracefully <device>
 dongle restart now <device>
@@ -101,24 +133,14 @@ dongle stop gracefully <device>
 dongle stop now <device>
 dongle stop when convenient <device>
 dongle start <device>
-dongle restart gracefully <device>
-dongle restart now <device>
-dongle restart when convenient <device>
 dongle remove gracefully <device>
 dongle remove now <device>
 dongle remove when convenient <device>
 dongle reload gracefully
 dongle reload now
 dongle reload when convenient
+```
 
-Building from source:
-
-Prerequisites:
-  apt install asterisk-dev
-
-Build and install:
-  ./configure
-  make
-  make install
+---
 
 Original chan_dongle project: https://github.com/bg111/asterisk-chan-dongle/

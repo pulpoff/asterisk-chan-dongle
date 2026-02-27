@@ -9,7 +9,6 @@
 
 services:
   asterisk-dongle:
-    build: .
     image: ghcr.io/pulpoff/asterisk-chan-dongle:latest
     container_name: asterisk-dongle
     restart: unless-stopped
