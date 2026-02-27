@@ -17,12 +17,16 @@ FROM debian:bookworm-slim AS builder
 
 ARG ASTERISK_VER=20-current
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
         build-essential \
+        autoconf \
+        automake \
         libtool \
         pkg-config \
         ca-certificates \
         wget \
+        bzip2 \
+        patch \
         # Asterisk build dependencies
         libncurses5-dev \
         libxml2-dev \
@@ -32,8 +36,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libssl-dev \
         libedit-dev \
         libsrtp2-dev \
-        # chan_dongle needs iconv
-        libc6-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Build Asterisk 20 LTS ──────────────────────────────────────────────────
