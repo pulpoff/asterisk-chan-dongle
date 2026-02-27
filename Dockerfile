@@ -115,7 +115,7 @@ RUN CONFIG_SITE=/tmp/config.site ./configure \
         --enable res_pjsip_endpoint_identifier_user \
         --enable res_srtp \
         menuselect.makeopts \
-    && make -j$(nproc) \
+    && MAKEFLAGS="-j1" make \
     && make install
 
 # ── Build chan_dongle against our Asterisk ──────────────────────────────────
