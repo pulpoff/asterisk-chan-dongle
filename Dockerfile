@@ -83,9 +83,12 @@ RUN make menuselect.makeopts \
         --enable chan_sip \
         --enable format_gsm \
         --enable codec_alaw \
+        --enable codec_ulaw \
+        --enable codec_a_mu \
         --enable codec_g722 \
         --enable res_rtp_asterisk \
         --enable res_srtp \
+        --enable res_timing_timerfd \
         menuselect.makeopts
 
 # ── Build and install Asterisk ────────────────────────────────────────────

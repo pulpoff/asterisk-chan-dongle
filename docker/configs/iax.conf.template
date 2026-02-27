@@ -12,6 +12,8 @@ context=incoming
 register => ${TRUNK_USER}:${TRUNK_PASS}@${TRUNK_HOST}:${TRUNK_PORT}
 authdebug=yes
 disallow=all
+allow=alaw
+allow=ulaw
 allow=g722
 encryption=yes
 
