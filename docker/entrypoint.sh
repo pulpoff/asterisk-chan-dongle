@@ -69,6 +69,24 @@ else
     echo ">> Using existing TLS certificate: $TLS_DIR/asterisk.pem"
 fi
 
+# ── Generate IAX2 RSA keys if not present ────────────────────────────────────
+KEYS_DIR="/var/lib/asterisk/keys"
+if [ ! -f "$KEYS_DIR/iax.key" ]; then
+    echo ">> No IAX2 RSA keys found, generating..."
+    astgenkey -n iax 2>/dev/null || {
+        # astgenkey may not be available; fall back to openssl
+        openssl genrsa -out "$KEYS_DIR/iax.key" 1024 2>/dev/null
+        openssl rsa -in "$KEYS_DIR/iax.key" -pubout -out "$KEYS_DIR/iax.pub" 2>/dev/null
+    }
+    chmod 600 "$KEYS_DIR/iax.key"
+    echo "   IAX2 RSA keys generated in $KEYS_DIR"
+    echo "   To enable IAX2 encryption, exchange public keys with your PBX:"
+    echo "     - Copy $KEYS_DIR/iax.pub to the remote Asterisk /var/lib/asterisk/keys/"
+    echo "     - Copy the remote iax.pub to this container's $KEYS_DIR/"
+else
+    echo ">> Using existing IAX2 RSA keys: $KEYS_DIR/iax.key"
+fi
+
 # ── Generate Asterisk configs from templates ────────────────────────────────
 echo ">> Generating Asterisk configs..."
 echo "   Protocol : $TRUNK_PROTO"
