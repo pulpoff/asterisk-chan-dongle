@@ -33,6 +33,16 @@ Supported features:
 
 ---
 
+## Installing Docker on Armbian
+
+Most Armbian images ship without Docker. Run the included install script:
+
+```bash
+sudo bash docker/install-docker.sh
+```
+
+---
+
 ## Docker Quick Start
 
 Plug in your Huawei dongle, then:

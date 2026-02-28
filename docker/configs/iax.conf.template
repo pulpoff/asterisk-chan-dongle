@@ -15,7 +15,7 @@ disallow=all
 allow=alaw
 allow=ulaw
 allow=g722
-encryption=no
+encryption=yes
 
 ; ── Trunk definition ──────────────────────────────────────────────────────
 [trunk]
