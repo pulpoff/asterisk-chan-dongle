@@ -35,10 +35,10 @@ Supported features:
 
 ## Installing Docker on Armbian
 
-Most Armbian images ship without Docker. Run the included install script:
+Most Armbian images ship without Docker. Install it with one command:
 
 ```bash
-sudo bash docker/install-docker.sh
+curl -fsSL https://raw.githubusercontent.com/pulpoff/asterisk-chan-dongle/master/docker/install-docker.sh | sudo bash
 ```
 
 ---
